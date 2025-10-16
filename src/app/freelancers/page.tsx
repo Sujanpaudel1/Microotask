@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { mockUsers } from '@/lib/mockData';
 import { Search, Star, User, CheckCircle, Filter } from 'lucide-react';
 
 export default function FreelancersPage() {
@@ -9,12 +8,15 @@ export default function FreelancersPage() {
     const [selectedSkill, setSelectedSkill] = useState('');
     const [minRating, setMinRating] = useState('');
 
+    // No mock users - will be fetched from database in future implementation
+    const mockUsers: any[] = [];
+    
     // Get all unique skills
     const allSkills = Array.from(new Set(mockUsers.flatMap(user => user.skills)));
 
     const filteredFreelancers = mockUsers.filter(user => {
         const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+            user.skills.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
 
         const matchesSkill = !selectedSkill || user.skills.includes(selectedSkill);
         const matchesRating = !minRating || user.rating >= parseFloat(minRating);
@@ -119,7 +121,7 @@ export default function FreelancersPage() {
                                     {/* Skills */}
                                     <div className="mb-4">
                                         <div className="flex flex-wrap gap-2">
-                                            {freelancer.skills.slice(0, 3).map((skill, index) => (
+                                            {freelancer.skills.slice(0, 3).map((skill: string, index: number) => (
                                                 <span
                                                     key={index}
                                                     className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium"

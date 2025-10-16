@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { TaskCard } from '@/components/TaskCard';
-import { mockTasks, categories } from '@/lib/mockData';
+import { categories } from '@/lib/mockData';
 import { Search, Users, CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function Home() {
-  const featuredTasks = mockTasks.slice(0, 6);
+  // No featured tasks displayed - users should browse the tasks page
+  const featuredTasks: any[] = [];
 
   return (
     <div className="min-h-screen">

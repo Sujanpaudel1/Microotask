@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { mockTasks } from '@/lib/mockData';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
     BarChart3,
@@ -20,6 +19,10 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('overview');
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState<any>(null);
+    const [userTasks, setUserTasks] = useState<any[]>([]);
+    const [loadingStats, setLoadingStats] = useState(true);
+    const [loadingTasks, setLoadingTasks] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -46,6 +49,54 @@ export default function Dashboard() {
         checkAuth();
     }, [router]);
 
+    // Fetch dashboard stats
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (!user) return;
+            
+            try {
+                setLoadingStats(true);
+                const response = await fetch('/api/dashboard/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    setStats(data.stats);
+                } else {
+                    console.error('Failed to fetch stats');
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            } finally {
+                setLoadingStats(false);
+            }
+        };
+
+        fetchStats();
+    }, [user]);
+
+    // Fetch user's tasks
+    useEffect(() => {
+        const fetchTasks = async () => {
+            if (!user) return;
+            
+            try {
+                setLoadingTasks(true);
+                const response = await fetch('/api/dashboard/my-tasks');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserTasks(data.tasks);
+                } else {
+                    console.error('Failed to fetch tasks');
+                }
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            } finally {
+                setLoadingTasks(false);
+            }
+        };
+
+        fetchTasks();
+    }, [user]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -54,50 +105,37 @@ export default function Dashboard() {
         );
     }
 
-    // Mock additional user data (extend the authenticated user data)
-    const mockUserStats = {
-        type: 'client', // or 'freelancer'
-        tasksPosted: 5,
-        tasksCompleted: 3,
-        totalSpent: 125000,
-        activeProposals: 12,
-        rating: 4.8,
-        reviewCount: 15
-    };
-
-    // Mock user's tasks
-    const userTasks = mockTasks.slice(0, 3);
-
-    const stats = [
+    // Create stats array from fetched data
+    const statsArray = stats ? [
         {
             title: 'Tasks Posted',
-            value: user.tasksPosted,
+            value: stats.tasksPosted || 0,
             icon: <Plus className="w-6 h-6" />,
             color: 'bg-blue-500',
             change: '+2 this month'
         },
         {
             title: 'Tasks Completed',
-            value: user.tasksCompleted,
+            value: stats.tasksCompleted || 0,
             icon: <CheckCircle className="w-6 h-6" />,
             color: 'bg-green-500',
             change: '+1 this week'
         },
         {
             title: 'Total Spent',
-            value: formatCurrency(user.totalSpent),
+            value: formatCurrency(stats.totalSpent || 0),
             icon: <DollarSign className="w-6 h-6" />,
             color: 'bg-purple-500',
-            change: '+NPR 20000 this month'
+            change: `NPR ${formatCurrency(stats.totalSpent || 0)}`
         },
         {
             title: 'Active Proposals',
-            value: user.activeProposals,
+            value: stats.activeProposals || 0,
             icon: <MessageSquare className="w-6 h-6" />,
             color: 'bg-orange-500',
-            change: '3 new today'
+            change: 'On your tasks'
         }
-    ];
+    ] : [];
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -114,20 +152,26 @@ export default function Dashboard() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {stats.map((stat, index) => (
-                        <div key={index} className="bg-white rounded-lg shadow-sm border p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                                    <p className="text-sm text-green-600 mt-1">{stat.change}</p>
-                                </div>
-                                <div className={`${stat.color} text-white p-3 rounded-lg`}>
-                                    {stat.icon}
+                    {loadingStats ? (
+                        <div className="col-span-4 text-center py-8">
+                            <div className="text-gray-600">Loading statistics...</div>
+                        </div>
+                    ) : (
+                        statsArray.map((stat: any, index: number) => (
+                            <div key={index} className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                                        <p className="text-sm text-green-600 mt-1">{stat.change}</p>
+                                    </div>
+                                    <div className={`${stat.color} text-white p-3 rounded-lg`}>
+                                        {stat.icon}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
 
                 {/* Tabs */}
@@ -237,41 +281,65 @@ export default function Dashboard() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    {userTasks.map((task) => (
-                                        <div key={task.id} className="bg-white rounded-lg shadow-sm border p-6">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <h3 className="text-lg font-medium text-gray-900">{task.title}</h3>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${task.status === 'Open' ? 'bg-blue-100 text-blue-800' :
-                                                    task.status === 'In Progress' ? 'bg-orange-100 text-orange-800' :
-                                                        'bg-green-100 text-green-800'
-                                                    }`}>
-                                                    {task.status}
-                                                </span>
-                                            </div>
-
-                                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">{task.description}</p>
-
-                                            <div className="flex justify-between items-center">
-                                                <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                                    <span>{formatCurrency(task.budget.min)} - {formatCurrency(task.budget.max)}</span>
-                                                    <span>•</span>
-                                                    <span>Due {formatDate(task.deadline)}</span>
-                                                </div>
-
-                                                <div className="flex space-x-2">
-                                                    <Link
-                                                        href={`/tasks/${task.id}`}
-                                                        className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </Link>
-                                                    <button className="p-2 text-gray-600 hover:text-blue-600 transition-colors">
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
+                                    {loadingTasks ? (
+                                        <div className="text-center py-8">
+                                            <div className="text-gray-600">Loading tasks...</div>
                                         </div>
-                                    ))}
+                                    ) : userTasks.length === 0 ? (
+                                        <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+                                            <div className="text-gray-500 mb-2">No tasks posted yet</div>
+                                            <p className="text-sm text-gray-400">
+                                                Post your first task to get started!
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        userTasks.map((task: any) => (
+                                            <div key={task.id} className="bg-white rounded-lg shadow-sm border p-6">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <h3 className="text-lg font-medium text-gray-900">{task.title}</h3>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${task.status === 'Open' ? 'bg-blue-100 text-blue-800' :
+                                                        task.status === 'In Progress' ? 'bg-orange-100 text-orange-800' :
+                                                        task.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                                            'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                        {task.status || 'Open'}
+                                                    </span>
+                                                </div>
+
+                                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{task.description}</p>
+
+                                                <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                                                    <span className="font-medium">{formatCurrency(task.budget_min)} - {formatCurrency(task.budget_max)}</span>
+                                                    <span>•</span>
+                                                    <span>{task.proposals_count || 0} proposals</span>
+                                                    <span>•</span>
+                                                    <span className="text-xs">{task.category}</span>
+                                                </div>
+
+                                                <div className="flex justify-between items-center pt-3 border-t">
+                                                    <div className="text-sm text-gray-500">
+                                                        Posted {formatDate(task.created_at)}
+                                                    </div>
+
+                                                    <div className="flex space-x-2">
+                                                        <Link
+                                                            href={`/tasks/${task.id}`}
+                                                            className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                                                            title="View Task"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </Link>
+                                                        <button 
+                                                            className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                                                            title="Edit Task"
+                                                        >
+                                                            <Edit className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         )}
