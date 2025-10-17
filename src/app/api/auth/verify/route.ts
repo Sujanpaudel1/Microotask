@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
+import db from '@/lib/database-sqlite';
 
 export async function GET(request: NextRequest) {
     try {
@@ -22,12 +23,28 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // Fetch fresh user data from database including profile image
+        const user = db.prepare(`
+            SELECT id, name, email, type, profile_image
+            FROM users
+            WHERE id = ?
+        `).get(payload.userId) as any;
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 401 }
+            );
+        }
+
         return NextResponse.json(
             {
                 user: {
-                    id: payload.userId,
-                    email: payload.email,
-                    name: payload.name,
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    type: user.type,
+                    profile_image: user.profile_image,
                 },
             },
             { status: 200 }
