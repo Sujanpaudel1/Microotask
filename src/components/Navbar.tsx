@@ -192,6 +192,13 @@ export function Navbar() {
                                             Dashboard
                                         </Link>
                                         <Link
+                                            href="/my-tasks"
+                                            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                                            onClick={() => setShowUserMenu(false)}
+                                        >
+                                            My Tasks
+                                        </Link>
+                                        <Link
                                             href="/profile"
                                             className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                                             onClick={() => setShowUserMenu(false)}
@@ -286,6 +293,13 @@ export function Navbar() {
                                         onClick={() => setIsMenuOpen(false)}
                                     >
                                         Dashboard
+                                    </Link>
+                                    <Link 
+                                        href="/my-tasks" 
+                                        className="block text-gray-700 hover:text-blue-600 transition-colors py-2 px-2"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        My Tasks
                                     </Link>
                                     <Link 
                                         href="/profile" 

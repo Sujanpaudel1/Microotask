@@ -1,6 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/database-sqlite';
 
+// GET all proposals for a task
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        const taskId = Number(id);
+
+        const proposals = db.prepare(`
+            SELECT p.*, u.name as freelancer_name, u.email as freelancer_email, 
+                   u.rating, u.review_count, u.completed_tasks, u.profile_image
+            FROM proposals p
+            LEFT JOIN users u ON p.freelancer_id = u.id
+            WHERE p.task_id = ?
+            ORDER BY p.created_at DESC
+        `).all(taskId);
+
+        return NextResponse.json({ proposals });
+    } catch (error) {
+        console.error('Failed to fetch proposals:', error);
+        return NextResponse.json({ error: 'Failed to fetch proposals' }, { status: 500 });
+    }
+}
+
+// POST a new proposal
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
