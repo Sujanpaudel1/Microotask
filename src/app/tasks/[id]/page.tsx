@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { formatCurrency, formatDate, cn } from '@/lib/utils';
 import {
@@ -15,18 +15,63 @@ import {
 } from 'lucide-react';
 
 interface TaskDetailPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default function TaskDetailPage({ params }: TaskDetailPageProps) {
+    const unwrappedParams = use(params);
     const [proposalText, setProposalText] = useState('');
     const [proposalPrice, setProposalPrice] = useState('');
+    const [estimatedDuration, setEstimatedDuration] = useState('');
     const [showProposalForm, setShowProposalForm] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [task, setTask] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [proposals, setProposals] = useState<any[]>([]);
+    const [currentUser, setCurrentUser] = useState<any | null>(null);
+    const [isOwner, setIsOwner] = useState(false);
+
+    // Fetch current user
+    useEffect(() => {
+        fetch('/api/auth/verify', { credentials: 'include' })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data) {
+                    console.log('Current user:', data);
+                    setCurrentUser(data);
+                }
+            })
+            .catch(() => setCurrentUser(null));
+    }, []);
+
+    // Fetch proposals if user is the task owner
+    useEffect(() => {
+        console.log('Checking ownership:', { task, currentUser });
+        if (task && currentUser && currentUser.user) {
+            const userId = currentUser.user.id;
+            console.log('Task client_id:', task.client_id);
+            console.log('Current userId:', userId);
+            
+            if (task.client_id === userId) {
+                console.log('User is owner! Fetching proposals...');
+                setIsOwner(true);
+                fetch(`/api/tasks/${unwrappedParams.id}/proposals`, {
+                    credentials: 'include'
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('Proposals fetched:', data.proposals);
+                        setProposals(data.proposals || []);
+                    })
+                    .catch(err => console.error('Failed to load proposals', err));
+            } else {
+                console.log('User is NOT owner');
+            }
+        }
+    }, [task, currentUser, unwrappedParams.id]);
 
     useEffect(() => {
         let mounted = true;
@@ -34,7 +79,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             .then(res => res.json())
             .then(data => {
                 if (!mounted) return;
-                const found = data.tasks.find((t: any) => String(t.id) === String(params.id));
+                const found = data.tasks.find((t: any) => String(t.id) === String(unwrappedParams.id));
                 if (found) {
                     // Normalize task data
                     const normalized = {
@@ -66,7 +111,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             .finally(() => setLoading(false));
 
         return () => { mounted = false; };
-    }, [params.id]);
+    }, [unwrappedParams.id]);
 
     if (loading) {
         return (
@@ -120,50 +165,123 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
     const handleSubmitProposal = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!proposalText.trim() || !proposalPrice || !estimatedDuration) {
+            alert('Please fill in all fields');
+            return;
+        }
+
         try {
+            setSubmitting(true);
+
             // Verify user
-            const verifyRes = await fetch('/api/auth/verify');
+            const verifyRes = await fetch('/api/auth/verify', {
+                credentials: 'include'
+            });
+            
             if (!verifyRes.ok) {
                 alert('You must be logged in to submit a proposal.');
-                window.location.href = `/login?redirect=/tasks/${params.id}`;
+                window.location.href = `/login?redirect=/tasks/${unwrappedParams.id}`;
                 return;
             }
+            
             const verifyData = await verifyRes.json();
-            const freelancerId = verifyData?.user?.id;
+            const freelancerId = verifyData?.userId || verifyData?.user?.id;
 
             const payload = {
                 freelancerId,
-                message: proposalText,
+                message: proposalText.trim(),
                 proposedPrice: Number(proposalPrice),
-                estimatedDuration: null,
+                estimatedDuration: estimatedDuration.trim(),
             };
 
-            const res = await fetch(`/api/tasks/${params.id}/proposals`, {
+            const res = await fetch(`/api/tasks/${unwrappedParams.id}/proposals`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(payload),
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
-                const err = await res.json();
-                console.error('Failed to submit proposal', err);
-                alert('Failed to submit proposal');
+                console.error('Failed to submit proposal:', data);
+                alert(data.error || 'Failed to submit proposal');
                 return;
             }
 
             // Refresh task data to show updated counts
             const refreshed = await fetch('/api/tasks');
             const refreshedData = await refreshed.json();
-            const found = refreshedData.tasks.find((t: any) => String(t.id) === String(params.id));
+            const found = refreshedData.tasks.find((t: any) => String(t.id) === String(unwrappedParams.id));
             setTask(found || task);
 
             alert('Proposal submitted successfully!');
             setShowProposalForm(false);
             setProposalText('');
             setProposalPrice('');
-        } catch (err) {
-            console.error('Error submitting proposal', err);
-            alert('An error occurred');
+            setEstimatedDuration('');
+        } catch (err: any) {
+            console.error('Error submitting proposal:', err);
+            alert(err.message || 'An error occurred');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleAcceptProposal = async (proposalId: number) => {
+        if (!confirm('Accept this proposal? This will assign the freelancer to your task.')) return;
+
+        try {
+            const res = await fetch(`/api/tasks/${unwrappedParams.id}/accept`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ proposalId })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || 'Failed to accept proposal');
+                return;
+            }
+
+            alert('Proposal accepted successfully!');
+            // Refresh proposals and task
+            window.location.reload();
+        } catch (err: any) {
+            console.error('Error accepting proposal:', err);
+            alert('Failed to accept proposal');
+        }
+    };
+
+    const handleRejectProposal = async (proposalId: number) => {
+        if (!confirm('Reject this proposal?')) return;
+
+        try {
+            const res = await fetch(`/api/tasks/${unwrappedParams.id}/reject`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ proposalId })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || 'Failed to reject proposal');
+                return;
+            }
+
+            alert('Proposal rejected');
+            // Refresh proposals
+            setProposals(proposals.map(p => 
+                p.id === proposalId ? { ...p, status: 'Rejected' } : p
+            ));
+        } catch (err: any) {
+            console.error('Error rejecting proposal:', err);
+            alert('Failed to reject proposal');
         }
     };
 
@@ -194,7 +312,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
                         <div className="space-y-3">
                             <button
-                                onClick={() => window.location.href = `/login?redirect=/tasks/${params.id}`}
+                                onClick={() => window.location.href = `/login?redirect=/tasks/${unwrappedParams.id}`}
                                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                             >
                                 Go to Login
@@ -307,25 +425,121 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                             </div>
                         )}
 
-                        {/* Proposals Section */}
-                        <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Proposals ({task.proposals_count || 0})
-                            </h2>
-                            {task.proposals_count > 0 && task.proposals_total > 0 && (
-                                <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-                                    <p className="text-sm text-blue-900">
-                                        <span className="font-semibold">Total Bids:</span> NPR {task.proposals_total.toLocaleString()}
+                        {/* Proposals Section - Only visible to task owner */}
+                        {isOwner && (
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Proposals Received ({proposals.length})
+                                </h2>
+                                
+                                {proposals.length === 0 ? (
+                                    <p className="text-gray-600 text-center py-8">
+                                        No proposals yet. Freelancers will see this task and submit their proposals.
                                     </p>
-                                    <p className="text-xs text-blue-700 mt-1">
-                                        Average bid: NPR {Math.round(task.proposals_total / task.proposals_count).toLocaleString()}
-                                    </p>
-                                </div>
-                            )}
-                            <p className="text-gray-600">
-                                Proposals are only visible to the client who posted this task.
-                            </p>
-                        </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {proposals.map((proposal: any) => (
+                                            <div 
+                                                key={proposal.id} 
+                                                className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors"
+                                            >
+                                                {/* Freelancer Info */}
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div className="flex items-start space-x-3">
+                                                        <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                                            <User className="w-6 h-6 text-gray-600" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-semibold text-gray-900">
+                                                                {proposal.freelancer_name}
+                                                            </h4>
+                                                            <div className="flex items-center space-x-1 mt-1">
+                                                                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                                                                <span className="text-sm text-gray-600">
+                                                                    {proposal.rating || 0} ({proposal.review_count || 0} reviews)
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-sm text-gray-500 mt-1">
+                                                                {proposal.completed_tasks || 0} tasks completed
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-2xl font-bold text-green-600">
+                                                            NPR {proposal.proposed_price.toLocaleString()}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            {proposal.estimated_duration}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Proposal Message */}
+                                                <div className="mb-3">
+                                                    <p className="text-sm font-medium text-gray-700 mb-1">Cover Letter:</p>
+                                                    <p className="text-gray-600 text-sm">{proposal.message}</p>
+                                                </div>
+
+                                                {/* Submission Date and Status */}
+                                                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                                    <p className="text-xs text-gray-500">
+                                                        Submitted {formatDate(proposal.created_at)}
+                                                    </p>
+                                                    
+                                                    {proposal.status === 'Pending' && task.status === 'Open' ? (
+                                                        <div className="flex space-x-2">
+                                                            <button
+                                                                onClick={() => handleAcceptProposal(proposal.id)}
+                                                                className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRejectProposal(proposal.id)}
+                                                                className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                                                            >
+                                                                Reject
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className={cn(
+                                                            'px-3 py-1 rounded-full text-sm font-medium',
+                                                            proposal.status === 'Accepted' 
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                        )}>
+                                                            {proposal.status}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Proposals Count (for non-owners) */}
+                        {!isOwner && (
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Proposals ({task.proposals_count || 0})
+                                </h2>
+                                {task.proposals_count > 0 && task.proposals_total > 0 && (
+                                    <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                                        <p className="text-sm text-blue-900">
+                                            <span className="font-semibold">Total Bids:</span> NPR {task.proposals_total.toLocaleString()}
+                                        </p>
+                                        <p className="text-xs text-blue-700 mt-1">
+                                            Average bid: NPR {Math.round(task.proposals_total / task.proposals_count).toLocaleString()}
+                                        </p>
+                                    </div>
+                                )}
+                                <p className="text-gray-600">
+                                    Proposals are only visible to the client who posted this task.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sidebar */}
@@ -420,12 +634,26 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                                                 required
                                             />
                                         </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Estimated Duration
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={estimatedDuration}
+                                                onChange={(e) => setEstimatedDuration(e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                                                placeholder="e.g., 3 days, 1 week, 2 weeks"
+                                                required
+                                            />
+                                        </div>
                                         <div className="flex space-x-3">
                                             <button
                                                 type="submit"
-                                                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                                disabled={submitting}
+                                                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
-                                                Submit Proposal
+                                                {submitting ? 'Submitting...' : 'Submit Proposal'}
                                             </button>
                                             <button
                                                 type="button"
