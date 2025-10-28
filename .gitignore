@@ -22,11 +22,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local env files
-.env*.local
-.env
-.env.development
-.env.production
+# Local env files - REMOVED TO INCLUDE IN GIT
+# .env*.local
+# .env
+# .env.development
+# .env.production
 
 # Vercel
 .vercel
@@ -35,9 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Database
-*.db
-*.db-shm
-*.db-wal
-microtask.db
+# Database - REMOVED TO INCLUDE IN GIT
+# *.db
+# *.db-shm
+# *.db-wal
+# microtask.db
 node_modules
