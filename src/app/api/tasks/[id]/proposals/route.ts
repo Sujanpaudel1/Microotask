@@ -41,8 +41,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         // Create notification for the task owner
         const task = db.prepare('SELECT client_id, title FROM tasks WHERE id = ?').get(taskId) as any;
         if (task && task.client_id) {
-            const payload = JSON.stringify({ taskId, title: task.title, freelancerId, proposedPrice });
-            db.prepare('INSERT INTO notifications (user_id, type, payload) VALUES (?, ?, ?)').run(task.client_id, 'proposal', payload);
+            const freelancer = db.prepare('SELECT name FROM users WHERE id = ?').get(freelancerId) as any;
+            const payload = JSON.stringify({ 
+                message: `${freelancer?.name || 'A freelancer'} submitted a proposal for "${task.title}"`,
+                taskId, 
+                taskTitle: task.title, 
+                freelancerId, 
+                proposedPrice 
+            });
+            db.prepare('INSERT INTO notifications (user_id, type, payload) VALUES (?, ?, ?)').run(task.client_id, 'proposal_submitted', payload);
         }
 
         const newProposal = db.prepare('SELECT * FROM proposals WHERE id = ?').get(result.lastInsertRowid);

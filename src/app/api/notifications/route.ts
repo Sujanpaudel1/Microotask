@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import db from '@/lib/database-sqlite';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET(request: NextRequest) {
     try {
+        // Try to get userId from query params (for backward compatibility)
         const url = new URL(request.url);
-        const userId = url.searchParams.get('userId');
+        let userId = url.searchParams.get('userId');
+        
+        // If no userId in params, get it from auth token
         if (!userId) {
-            return NextResponse.json({ error: 'userId is required' }, { status: 400 });
+            const token = request.cookies.get('auth-token')?.value;
+            if (!token) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+            const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+            userId = decoded.userId.toString();
         }
 
         const rows = db.prepare('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC').all(Number(userId));
