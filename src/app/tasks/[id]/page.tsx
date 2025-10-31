@@ -185,8 +185,20 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                 return;
             }
             
+            // Check if response is JSON
+            const contentType = verifyRes.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server error - please try again later');
+            }
+            
             const verifyData = await verifyRes.json();
             const freelancerId = verifyData?.userId || verifyData?.user?.id;
+
+            if (!freelancerId) {
+                alert('Authentication error. Please login again.');
+                window.location.href = `/login?redirect=/tasks/${unwrappedParams.id}`;
+                return;
+            }
 
             const payload = {
                 freelancerId,
@@ -202,12 +214,18 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                 body: JSON.stringify(payload),
             });
 
+            // Check if response is JSON before parsing
+            const resContentType = res.headers.get('content-type');
+            if (!resContentType || !resContentType.includes('application/json')) {
+                console.error('Non-JSON response received');
+                throw new Error('Server returned an invalid response. Please try again.');
+            }
+
             const data = await res.json();
 
             if (!res.ok) {
                 console.error('Failed to submit proposal:', data);
-                alert(data.error || 'Failed to submit proposal');
-                return;
+                throw new Error(data.error || 'Failed to submit proposal');
             }
 
             alert('Proposal submitted successfully!');
@@ -220,9 +238,10 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             
             // Reload the page to show updated proposal count
             window.location.reload();
+            
         } catch (err: any) {
             console.error('Error submitting proposal:', err);
-            alert(err.message || 'An error occurred');
+            alert(err.message || 'An error occurred while submitting your proposal. Please try again.');
         } finally {
             setSubmitting(false);
         }
