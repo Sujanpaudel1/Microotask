@@ -210,17 +210,16 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                 return;
             }
 
-            // Refresh task data to show updated counts
-            const refreshed = await fetch('/api/tasks');
-            const refreshedData = await refreshed.json();
-            const found = refreshedData.tasks.find((t: any) => String(t.id) === String(unwrappedParams.id));
-            setTask(found || task);
-
             alert('Proposal submitted successfully!');
-            setShowProposalForm(false);
+            
+            // Clear form
             setProposalText('');
             setProposalPrice('');
             setEstimatedDuration('');
+            setShowProposalForm(false);
+            
+            // Reload the page to show updated proposal count
+            window.location.reload();
         } catch (err: any) {
             console.error('Error submitting proposal:', err);
             alert(err.message || 'An error occurred');
