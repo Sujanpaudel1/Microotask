@@ -20,16 +20,16 @@ export async function POST(request: NextRequest) {
         const result = db.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0')
             .run(userId);
 
-        return NextResponse.json({ 
-            success: true, 
+        return NextResponse.json({
+            success: true,
             message: 'All notifications marked as read',
             updated: result.changes
         }, { status: 200 });
 
     } catch (error) {
         console.error('Error marking all notifications as read:', error);
-        return NextResponse.json({ 
-            error: 'Failed to mark all notifications as read' 
+        return NextResponse.json({
+            error: 'Failed to mark all notifications as read'
         }, { status: 500 });
     }
 }

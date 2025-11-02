@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-    Bell, 
-    Check, 
-    CheckCheck, 
-    FileText, 
-    MessageSquare, 
-    UserPlus, 
+import {
+    Bell,
+    Check,
+    CheckCheck,
+    FileText,
+    MessageSquare,
+    UserPlus,
     DollarSign,
     AlertCircle,
     Clock
@@ -112,7 +112,7 @@ export default function NotificationsPage() {
         // Parse payload and navigate based on type
         try {
             const payload: NotificationPayload = JSON.parse(notification.payload);
-            
+
             if (payload.taskId) {
                 router.push(`/tasks/${payload.taskId}`);
             } else if (payload.conversationId) {
@@ -177,7 +177,7 @@ export default function NotificationsPage() {
         return date.toLocaleDateString();
     };
 
-    const filteredNotifications = notifications.filter(n => 
+    const filteredNotifications = notifications.filter(n =>
         filter === 'all' ? true : !n.is_read
     );
 
@@ -220,21 +220,19 @@ export default function NotificationsPage() {
                     <div className="flex gap-2">
                         <button
                             onClick={() => setFilter('all')}
-                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                                filter === 'all'
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'all'
                                     ? 'bg-blue-600 text-white'
                                     : 'bg-white text-gray-700 hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             All ({notifications.length})
                         </button>
                         <button
                             onClick={() => setFilter('unread')}
-                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                                filter === 'unread'
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'unread'
                                     ? 'bg-blue-600 text-white'
                                     : 'bg-white text-gray-700 hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             Unread ({unreadCount})
                         </button>
@@ -259,7 +257,7 @@ export default function NotificationsPage() {
                             {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
                         </h3>
                         <p className="text-gray-600">
-                            {filter === 'unread' 
+                            {filter === 'unread'
                                 ? "You're all caught up! Check back later for updates."
                                 : "When you receive notifications, they'll appear here."}
                         </p>
@@ -278,9 +276,8 @@ export default function NotificationsPage() {
                                 <div
                                     key={notification.id}
                                     onClick={() => handleNotificationClick(notification)}
-                                    className={`bg-white rounded-lg p-5 cursor-pointer transition-all hover:shadow-md ${
-                                        !notification.is_read ? 'border-l-4 border-blue-600 bg-blue-50/30' : ''
-                                    }`}
+                                    className={`bg-white rounded-lg p-5 cursor-pointer transition-all hover:shadow-md ${!notification.is_read ? 'border-l-4 border-blue-600 bg-blue-50/30' : ''
+                                        }`}
                                 >
                                     <div className="flex items-start gap-4">
                                         {/* Icon */}

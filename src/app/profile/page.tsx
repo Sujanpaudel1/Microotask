@@ -45,7 +45,7 @@ export default function ProfilePage() {
         try {
             setLoading(true);
             const response = await fetch('/api/profile');
-            
+
             if (response.status === 401) {
                 router.push('/login');
                 return;
@@ -54,7 +54,7 @@ export default function ProfilePage() {
             if (response.ok) {
                 const data = await response.json();
                 setProfile(data.profile);
-                
+
                 // Initialize form data
                 setFormData({
                     name: data.profile.name || '',
@@ -143,7 +143,7 @@ export default function ProfilePage() {
                 setProfile(data.profile);
                 setIsEditing(false);
                 setMessage({ type: 'success', text: 'Profile updated successfully!' });
-                
+
                 // Clear message after 3 seconds
                 setTimeout(() => setMessage(null), 3000);
             } else {
@@ -199,11 +199,10 @@ export default function ProfilePage() {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Success/Error Message */}
                 {message && (
-                    <div className={`mb-6 p-4 rounded-lg ${
-                        message.type === 'success' 
-                            ? 'bg-green-50 text-green-800 border border-green-200' 
+                    <div className={`mb-6 p-4 rounded-lg ${message.type === 'success'
+                            ? 'bg-green-50 text-green-800 border border-green-200'
                             : 'bg-red-50 text-red-800 border border-red-200'
-                    }`}>
+                        }`}>
                         <div className="flex items-center">
                             {message.type === 'success' ? (
                                 <CheckCircle className="w-5 h-5 mr-2" />
@@ -224,9 +223,9 @@ export default function ProfilePage() {
                                 <div className="relative">
                                     <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
                                         {formData.profile_image ? (
-                                            <img 
-                                                src={formData.profile_image} 
-                                                alt={profile.name} 
+                                            <img
+                                                src={formData.profile_image}
+                                                alt={profile.name}
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (

@@ -151,8 +151,8 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     }
 
     const isOwner = currentUser && task.client_id === currentUser.id;
-    const skillsRequired = typeof task.skills_required === 'string' 
-        ? JSON.parse(task.skills_required) 
+    const skillsRequired = typeof task.skills_required === 'string'
+        ? JSON.parse(task.skills_required)
         : (task.skills_required || []);
 
     return (
@@ -173,12 +173,11 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">{task.title}</h1>
                             <div className="flex gap-2">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                    task.status === 'Open' ? 'bg-green-100 text-green-800' :
-                                    task.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-                                    task.status === 'Completed' ? 'bg-gray-100 text-gray-800' :
-                                    'bg-red-100 text-red-800'
-                                }`}>
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${task.status === 'Open' ? 'bg-green-100 text-green-800' :
+                                        task.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                                            task.status === 'Completed' ? 'bg-gray-100 text-gray-800' :
+                                                'bg-red-100 text-red-800'
+                                    }`}>
                                     {task.status}
                                 </span>
                                 <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
@@ -225,21 +224,19 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                         <nav className="flex -mb-px">
                             <button
                                 onClick={() => setActiveTab('details')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                                    activeTab === 'details'
+                                className={`px-6 py-4 text-sm font-medium border-b-2 ${activeTab === 'details'
                                         ? 'border-blue-600 text-blue-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
+                                    }`}
                             >
                                 Task Details
                             </button>
                             <button
                                 onClick={() => setActiveTab('proposals')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 ${
-                                    activeTab === 'proposals'
+                                className={`px-6 py-4 text-sm font-medium border-b-2 ${activeTab === 'proposals'
                                         ? 'border-blue-600 text-blue-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
+                                    }`}
                             >
                                 Proposals ({proposals.length})
                             </button>
@@ -307,11 +304,10 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                                             <p className="text-gray-700 mb-3">{proposal.message}</p>
 
                                             <div className="flex justify-between items-center">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                    proposal.status === 'Accepted' ? 'bg-green-100 text-green-800' :
-                                                    proposal.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'
-                                                }`}>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${proposal.status === 'Accepted' ? 'bg-green-100 text-green-800' :
+                                                        proposal.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                                            'bg-yellow-100 text-yellow-800'
+                                                    }`}>
                                                     {proposal.status}
                                                 </span>
 

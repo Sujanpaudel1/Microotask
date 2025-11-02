@@ -50,9 +50,9 @@ export async function GET(request: NextRequest) {
             LIMIT 10
         `).all(userId);
 
-        return NextResponse.json({ 
-            success: true, 
-            tasks 
+        return NextResponse.json({
+            success: true,
+            tasks
         }, { status: 200 });
 
     } catch (error) {

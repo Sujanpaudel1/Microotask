@@ -20,14 +20,14 @@ export async function GET(request: NextRequest) {
         const result = db.prepare('SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0')
             .get(userId) as { count: number };
 
-        return NextResponse.json({ 
-            count: result.count 
+        return NextResponse.json({
+            count: result.count
         }, { status: 200 });
 
     } catch (error) {
         console.error('Error fetching unread count:', error);
-        return NextResponse.json({ 
-            error: 'Failed to fetch unread count' 
+        return NextResponse.json({
+            error: 'Failed to fetch unread count'
         }, { status: 500 });
     }
 }

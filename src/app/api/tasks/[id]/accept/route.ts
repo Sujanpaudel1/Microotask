@@ -12,7 +12,7 @@ export async function POST(
         // Await params
         const { id } = await params;
         const taskId = parseInt(id);
-        
+
         // Verify authentication
         const token = request.cookies.get('auth-token')?.value;
         if (!token) {

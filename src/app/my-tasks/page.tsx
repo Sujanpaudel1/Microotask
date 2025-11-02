@@ -122,41 +122,37 @@ export default function MyTasksPage() {
                         <nav className="flex -mb-px">
                             <button
                                 onClick={() => setActiveTab('active')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                                    activeTab === 'active'
+                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'active'
                                         ? 'border-blue-600 text-blue-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                }`}
+                                    }`}
                             >
                                 Active ({tasks.filter(t => t.status === 'Open').length})
                             </button>
                             <button
                                 onClick={() => setActiveTab('in-progress')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                                    activeTab === 'in-progress'
+                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'in-progress'
                                         ? 'border-blue-600 text-blue-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                }`}
+                                    }`}
                             >
                                 In Progress ({tasks.filter(t => t.status === 'In Progress').length})
                             </button>
                             <button
                                 onClick={() => setActiveTab('completed')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                                    activeTab === 'completed'
+                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'completed'
                                         ? 'border-blue-600 text-blue-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                }`}
+                                    }`}
                             >
                                 Completed ({tasks.filter(t => t.status === 'Completed').length})
                             </button>
                             <button
                                 onClick={() => setActiveTab('cancelled')}
-                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                                    activeTab === 'cancelled'
+                                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'cancelled'
                                         ? 'border-blue-600 text-blue-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                }`}
+                                    }`}
                             >
                                 Cancelled ({tasks.filter(t => t.status === 'Cancelled').length})
                             </button>
@@ -192,12 +188,11 @@ export default function MyTasksPage() {
                                             <Link href={`/tasks/${task.id}`} className="text-xl font-semibold text-gray-900 hover:text-blue-600">
                                                 {task.title}
                                             </Link>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                task.status === 'Open' ? 'bg-green-100 text-green-800' :
-                                                task.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-                                                task.status === 'Completed' ? 'bg-gray-100 text-gray-800' :
-                                                'bg-red-100 text-red-800'
-                                            }`}>
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${task.status === 'Open' ? 'bg-green-100 text-green-800' :
+                                                    task.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                                                        task.status === 'Completed' ? 'bg-gray-100 text-gray-800' :
+                                                            'bg-red-100 text-red-800'
+                                                }`}>
                                                 {task.status}
                                             </span>
                                         </div>

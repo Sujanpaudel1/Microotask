@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     try {
         const { id } = await params;
         const taskId = Number(id);
-        
+
         // Parse request body
         let body;
         try {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
         // Check if task exists and is open
         const task = db.prepare('SELECT client_id, title, status FROM tasks WHERE id = ?').get(taskId) as any;
-        
+
         if (!task) {
             return NextResponse.json({ error: 'Task not found' }, { status: 404 });
         }
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
         // Check if user already submitted a proposal
         const existingProposal = db.prepare('SELECT id FROM proposals WHERE task_id = ? AND freelancer_id = ?').get(taskId, freelancerId);
-        
+
         if (existingProposal) {
             return NextResponse.json({ error: 'You have already submitted a proposal for this task' }, { status: 400 });
         }
@@ -79,23 +79,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         // Create notification for the task owner
         if (task.client_id) {
             const freelancer = db.prepare('SELECT name FROM users WHERE id = ?').get(freelancerId) as any;
-            const payload = JSON.stringify({ 
+            const payload = JSON.stringify({
                 message: `${freelancer?.name || 'A freelancer'} submitted a proposal for "${task.title}"`,
-                taskId, 
-                taskTitle: task.title, 
-                freelancerId, 
-                proposedPrice 
+                taskId,
+                taskTitle: task.title,
+                freelancerId,
+                proposedPrice
             });
             db.prepare('INSERT INTO notifications (user_id, type, payload) VALUES (?, ?, ?)').run(task.client_id, 'proposal_submitted', payload);
         }
 
         const newProposal = db.prepare('SELECT * FROM proposals WHERE id = ?').get(result.lastInsertRowid);
-        return NextResponse.json({ 
+        return NextResponse.json({
             success: true,
             message: 'Proposal submitted successfully',
-            proposal: newProposal 
+            proposal: newProposal
         }, { status: 201 });
-        
+
     } catch (error) {
         console.error('Failed to submit proposal:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

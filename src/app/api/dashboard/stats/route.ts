@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Fetch dashboard statistics
-        
+
         // 1. Tasks Posted Count
         const tasksPostedResult = db.prepare(
             'SELECT COUNT(*) as count FROM tasks WHERE client_id = ?'

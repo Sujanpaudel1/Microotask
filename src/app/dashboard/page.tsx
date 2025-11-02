@@ -53,7 +53,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             if (!user) return;
-            
+
             try {
                 setLoadingStats(true);
                 const response = await fetch('/api/dashboard/stats');
@@ -77,7 +77,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchTasks = async () => {
             if (!user) return;
-            
+
             try {
                 setLoadingTasks(true);
                 const response = await fetch('/api/dashboard/my-tasks');
@@ -299,8 +299,8 @@ export default function Dashboard() {
                                                     <h3 className="text-lg font-medium text-gray-900">{task.title}</h3>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${task.status === 'Open' ? 'bg-blue-100 text-blue-800' :
                                                         task.status === 'In Progress' ? 'bg-orange-100 text-orange-800' :
-                                                        task.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                                            'bg-gray-100 text-gray-800'
+                                                            task.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                                                'bg-gray-100 text-gray-800'
                                                         }`}>
                                                         {task.status || 'Open'}
                                                     </span>
@@ -329,7 +329,7 @@ export default function Dashboard() {
                                                         >
                                                             <Eye className="w-4 h-4" />
                                                         </Link>
-                                                        <button 
+                                                        <button
                                                             className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
                                                             title="Edit Task"
                                                         >

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
         // Try to get userId from query params (for backward compatibility)
         const url = new URL(request.url);
         let userId = url.searchParams.get('userId');
-        
+
         // If no userId in params, get it from auth token
         if (!userId) {
             const token = request.cookies.get('auth-token')?.value;

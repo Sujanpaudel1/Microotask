@@ -10,7 +10,7 @@ export default function FreelancersPage() {
 
     // No mock users - will be fetched from database in future implementation
     const mockUsers: any[] = [];
-    
+
     // Get all unique skills
     const allSkills = Array.from(new Set(mockUsers.flatMap(user => user.skills)));
 

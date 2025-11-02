@@ -92,7 +92,7 @@ export function Navbar() {
                     }
                 });
                 console.log('Navbar: Auth response status:', verifyRes.status);
-                
+
                 if (!verifyRes.ok) {
                     console.log('Navbar: Not authenticated');
                     if (mounted) {
@@ -104,7 +104,7 @@ export function Navbar() {
                 }
                 const verifyData = await verifyRes.json();
                 console.log('Navbar: User data received:', verifyData?.user);
-                
+
                 if (mounted && verifyData?.user) {
                     setUser(verifyData.user);
                     setIsAuthenticated(true);
@@ -172,7 +172,7 @@ export function Navbar() {
 
     const handleNotificationClick = async (notification: Notification) => {
         setShowNotifications(false);
-        
+
         // Mark as read if not already
         if (!notification.is_read) {
             try {
@@ -200,7 +200,7 @@ export function Navbar() {
 
     const handleLogout = async () => {
         try {
-            await fetch('/api/auth/logout', { 
+            await fetch('/api/auth/logout', {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -260,7 +260,7 @@ export function Navbar() {
                         {/* Notifications */}
                         {isAuthenticated && (
                             <div className="relative" ref={notifDropdownRef}>
-                                <button 
+                                <button
                                     onClick={() => setShowNotifications(!showNotifications)}
                                     className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors focus:outline-none"
                                 >
@@ -309,9 +309,8 @@ export function Navbar() {
                                                             <button
                                                                 key={notif.id}
                                                                 onClick={() => handleNotificationClick(notif)}
-                                                                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                                                                    !notif.is_read ? 'bg-blue-50/50' : ''
-                                                                }`}
+                                                                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${!notif.is_read ? 'bg-blue-50/50' : ''
+                                                                    }`}
                                                             >
                                                                 <div className="flex items-start gap-3">
                                                                     {/* Icon */}
@@ -321,9 +320,8 @@ export function Navbar() {
 
                                                                     {/* Content */}
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className={`text-sm text-gray-900 line-clamp-2 ${
-                                                                            !notif.is_read ? 'font-semibold' : ''
-                                                                        }`}>
+                                                                        <p className={`text-sm text-gray-900 line-clamp-2 ${!notif.is_read ? 'font-semibold' : ''
+                                                                            }`}>
                                                                             {message}
                                                                         </p>
                                                                         <div className="flex items-center gap-2 mt-1">
@@ -349,7 +347,7 @@ export function Navbar() {
                                         {/* Footer */}
                                         {notifications.length > 0 && (
                                             <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-                                                <Link 
+                                                <Link
                                                     href="/notifications"
                                                     onClick={() => setShowNotifications(false)}
                                                     className="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
@@ -470,7 +468,7 @@ export function Navbar() {
                                 <Plus className="w-4 h-4" />
                                 <span>Post Task</span>
                             </Link>
-                            
+
                             {/* Mobile Auth Section */}
                             {isAuthenticated && user ? (
                                 <div className="space-y-2 pt-4 border-t">
@@ -487,22 +485,22 @@ export function Navbar() {
                                             <p className="text-sm text-gray-500 capitalize">{user?.type || 'Member'}</p>
                                         </div>
                                     </div>
-                                    <Link 
-                                        href="/dashboard" 
+                                    <Link
+                                        href="/dashboard"
                                         className="block text-gray-700 hover:text-blue-600 transition-colors py-2 px-2"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
                                         Dashboard
                                     </Link>
-                                    <Link 
-                                        href="/my-tasks" 
+                                    <Link
+                                        href="/my-tasks"
                                         className="block text-gray-700 hover:text-blue-600 transition-colors py-2 px-2"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
                                         My Tasks
                                     </Link>
-                                    <Link 
-                                        href="/profile" 
+                                    <Link
+                                        href="/profile"
                                         className="block text-gray-700 hover:text-blue-600 transition-colors py-2 px-2"
                                         onClick={() => setIsMenuOpen(false)}
                                     >

@@ -12,7 +12,7 @@ export async function GET(
     try {
         const { id } = await params;
         const taskId = parseInt(id);
-        
+
         const task = db.prepare(`
             SELECT t.*, u.name as client_name, u.email as client_email
             FROM tasks t
@@ -40,7 +40,7 @@ export async function PATCH(
     try {
         const { id } = await params;
         const taskId = parseInt(id);
-        
+
         // Verify authentication
         const token = request.cookies.get('auth-token')?.value;
         if (!token) {
@@ -117,7 +117,7 @@ export async function DELETE(
     try {
         const { id } = await params;
         const taskId = parseInt(id);
-        
+
         // Verify authentication
         const token = request.cookies.get('auth-token')?.value;
         if (!token) {

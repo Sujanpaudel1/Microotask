@@ -39,15 +39,15 @@ export async function PATCH(
         db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ?')
             .run(notificationId);
 
-        return NextResponse.json({ 
-            success: true, 
-            message: 'Notification marked as read' 
+        return NextResponse.json({
+            success: true,
+            message: 'Notification marked as read'
         }, { status: 200 });
 
     } catch (error) {
         console.error('Error marking notification as read:', error);
-        return NextResponse.json({ 
-            error: 'Failed to mark notification as read' 
+        return NextResponse.json({
+            error: 'Failed to mark notification as read'
         }, { status: 500 });
     }
 }

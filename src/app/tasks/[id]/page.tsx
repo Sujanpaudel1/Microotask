@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { formatCurrency, formatDate, cn } from '@/lib/utils';
+import ReviewModal from '@/components/ReviewModal';
 import {
     DollarSign,
     User,
@@ -27,6 +28,8 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
     const [estimatedDuration, setEstimatedDuration] = useState('');
     const [showProposalForm, setShowProposalForm] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [canReview, setCanReview] = useState<any>(null);
     const [task, setTask] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -54,7 +57,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             const userId = currentUser.user.id;
             console.log('Task client_id:', task.client_id);
             console.log('Current userId:', userId);
-            
+
             if (task.client_id === userId) {
                 console.log('User is owner! Fetching proposals...');
                 setIsOwner(true);
@@ -113,6 +116,22 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
         return () => { mounted = false; };
     }, [unwrappedParams.id]);
 
+    // Check if user can review this task
+    useEffect(() => {
+        if (task && task.status === 'Completed' && currentUser) {
+            fetch(`/api/tasks/${unwrappedParams.id}/can-review`, {
+                credentials: 'include'
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.canReview) {
+                        setCanReview(data);
+                    }
+                })
+                .catch(err => console.error('Failed to check review status', err));
+        }
+    }, [task, currentUser, unwrappedParams.id]);
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -165,7 +184,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
     const handleSubmitProposal = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!proposalText.trim() || !proposalPrice || !estimatedDuration) {
             alert('Please fill in all fields');
             return;
@@ -178,19 +197,19 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             const verifyRes = await fetch('/api/auth/verify', {
                 credentials: 'include'
             });
-            
+
             if (!verifyRes.ok) {
                 alert('You must be logged in to submit a proposal.');
                 window.location.href = `/login?redirect=/tasks/${unwrappedParams.id}`;
                 return;
             }
-            
+
             // Check if response is JSON
             const contentType = verifyRes.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('Server error - please try again later');
             }
-            
+
             const verifyData = await verifyRes.json();
             const freelancerId = verifyData?.userId || verifyData?.user?.id;
 
@@ -229,16 +248,16 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             }
 
             alert('Proposal submitted successfully!');
-            
+
             // Clear form
             setProposalText('');
             setProposalPrice('');
             setEstimatedDuration('');
             setShowProposalForm(false);
-            
+
             // Reload the page to show updated proposal count
             window.location.reload();
-            
+
         } catch (err: any) {
             console.error('Error submitting proposal:', err);
             alert(err.message || 'An error occurred while submitting your proposal. Please try again.');
@@ -294,7 +313,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
             alert('Proposal rejected');
             // Refresh proposals
-            setProposals(proposals.map(p => 
+            setProposals(proposals.map(p =>
                 p.id === proposalId ? { ...p, status: 'Rejected' } : p
             ));
         } catch (err: any) {
@@ -449,7 +468,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
                                     Proposals Received ({proposals.length})
                                 </h2>
-                                
+
                                 {proposals.length === 0 ? (
                                     <p className="text-gray-600 text-center py-8">
                                         No proposals yet. Freelancers will see this task and submit their proposals.
@@ -457,8 +476,8 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                                 ) : (
                                     <div className="space-y-4">
                                         {proposals.map((proposal: any) => (
-                                            <div 
-                                                key={proposal.id} 
+                                            <div
+                                                key={proposal.id}
                                                 className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors"
                                             >
                                                 {/* Freelancer Info */}
@@ -503,7 +522,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                                                     <p className="text-xs text-gray-500">
                                                         Submitted {formatDate(proposal.created_at)}
                                                     </p>
-                                                    
+
                                                     {proposal.status === 'Pending' && task.status === 'Open' ? (
                                                         <div className="flex space-x-2">
                                                             <button
@@ -522,7 +541,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                                                     ) : (
                                                         <span className={cn(
                                                             'px-3 py-1 rounded-full text-sm font-medium',
-                                                            proposal.status === 'Accepted' 
+                                                            proposal.status === 'Accepted'
                                                                 ? 'bg-green-100 text-green-800'
                                                                 : 'bg-red-100 text-red-800'
                                                         )}>
@@ -702,6 +721,23 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                             </div>
                         )}
 
+                        {/* Leave Review Section - For completed tasks */}
+                        {canReview && (
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Leave a Review</h3>
+                                <p className="text-gray-600 mb-4">
+                                    This task is completed. Share your experience with {canReview.revieweeName}.
+                                </p>
+                                <button
+                                    onClick={() => setShowReviewModal(true)}
+                                    className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium flex items-center justify-center gap-2"
+                                >
+                                    <Star className="w-5 h-5" />
+                                    Leave a Review
+                                </button>
+                            </div>
+                        )}
+
                         {/* Task Stats */}
                         <div className="bg-white rounded-lg shadow-sm border p-6">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Task Details</h3>
@@ -723,6 +759,21 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Review Modal */}
+            {canReview && (
+                <ReviewModal
+                    isOpen={showReviewModal}
+                    onClose={() => setShowReviewModal(false)}
+                    taskId={parseInt(unwrappedParams.id)}
+                    taskTitle={canReview.taskTitle}
+                    revieweeId={canReview.revieweeId}
+                    revieweeName={canReview.revieweeName}
+                    onReviewSubmitted={() => {
+                        setCanReview(null); // Hide the review button after submitting
+                    }}
+                />
+            )}
         </div>
     );
 }
