@@ -1,9 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/database-sqlite';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const rows = db.prepare('SELECT t.*, u.name as client_name, u.email as client_email FROM tasks t LEFT JOIN users u ON t.client_id = u.id ORDER BY t.created_at DESC').all();
+        const { searchParams } = new URL(request.url);
+        
+        // Get filter parameters
+        const search = searchParams.get('search') || '';
+        const category = searchParams.get('category') || '';
+        const minBudget = searchParams.get('minBudget') || '';
+        const maxBudget = searchParams.get('maxBudget') || '';
+        const difficulty = searchParams.get('difficulty') || '';
+        const status = searchParams.get('status') || '';
+        const skills = searchParams.get('skills') || '';
+
+        // Build dynamic query
+        let query = 'SELECT t.*, u.name as client_name, u.email as client_email FROM tasks t LEFT JOIN users u ON t.client_id = u.id WHERE 1=1';
+        const params: any[] = [];
+
+        // Search in title and description
+        if (search) {
+            query += ' AND (t.title LIKE ? OR t.description LIKE ?)';
+            params.push(`%${search}%`, `%${search}%`);
+        }
+
+        // Filter by category
+        if (category) {
+            query += ' AND t.category = ?';
+            params.push(category);
+        }
+
+        // Filter by budget range
+        if (minBudget) {
+            query += ' AND t.budget_max >= ?';
+            params.push(Number(minBudget));
+        }
+        if (maxBudget) {
+            query += ' AND t.budget_min <= ?';
+            params.push(Number(maxBudget));
+        }
+
+        // Filter by difficulty
+        if (difficulty) {
+            query += ' AND t.difficulty = ?';
+            params.push(difficulty);
+        }
+
+        // Filter by status
+        if (status) {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+
+        // Filter by skills (check if any skill in the comma-separated list matches)
+        if (skills) {
+            const skillList = skills.split(',').map(s => s.trim());
+            const skillConditions = skillList.map(() => 't.skills_required LIKE ?').join(' OR ');
+            if (skillConditions) {
+                query += ` AND (${skillConditions})`;
+                skillList.forEach(skill => params.push(`%${skill}%`));
+            }
+        }
+
+        query += ' ORDER BY t.created_at DESC';
+
+        const rows = db.prepare(query).all(...params);
 
         // For each task, compute total bids and number of proposals
         const tasks = rows.map((r: any) => {
@@ -15,7 +76,19 @@ export async function GET() {
             };
         });
 
-        return NextResponse.json({ tasks }, { status: 200 });
+        return NextResponse.json({ 
+            tasks,
+            filters: {
+                search,
+                category,
+                minBudget,
+                maxBudget,
+                difficulty,
+                status,
+                skills
+            },
+            total: tasks.length
+        }, { status: 200 });
     } catch (error) {
         console.error('Failed to fetch tasks:', error);
         return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
