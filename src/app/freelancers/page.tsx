@@ -1,28 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Star, User, CheckCircle, Filter } from 'lucide-react';
+
+interface Freelancer {
+    id: number;
+    name: string;
+    email: string;
+    bio: string | null;
+    skills: string[];
+    hourly_rate: number | null;
+    location: string | null;
+    rating: number | null;
+    review_count: number;
+    completed_tasks: number;
+    created_at: string;
+}
 
 export default function FreelancersPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSkill, setSelectedSkill] = useState('');
     const [minRating, setMinRating] = useState('');
+    const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // No mock users - will be fetched from database in future implementation
-    const mockUsers: any[] = [];
+    // Fetch freelancers from API
+    useEffect(() => {
+        fetchFreelancers();
+    }, [searchTerm, selectedSkill, minRating]);
 
-    // Get all unique skills
-    const allSkills = Array.from(new Set(mockUsers.flatMap(user => user.skills)));
+    const fetchFreelancers = async () => {
+        try {
+            setLoading(true);
+            const params = new URLSearchParams();
+            
+            if (searchTerm) params.append('search', searchTerm);
+            if (selectedSkill) params.append('skills', selectedSkill);
+            if (minRating) params.append('minRating', minRating);
 
-    const filteredFreelancers = mockUsers.filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.skills.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+            const response = await fetch(`/api/freelancers?${params.toString()}`);
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch freelancers');
+            }
 
-        const matchesSkill = !selectedSkill || user.skills.includes(selectedSkill);
-        const matchesRating = !minRating || user.rating >= parseFloat(minRating);
+            const data = await response.json();
+            setFreelancers(data.freelancers || []);
+        } catch (error) {
+            console.error('Error fetching freelancers:', error);
+            setFreelancers([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        return matchesSearch && matchesSkill && matchesRating;
-    });
+    // Get all unique skills from fetched freelancers
+    const allSkills = Array.from(new Set(freelancers.flatMap(user => user.skills)));
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -84,14 +117,14 @@ export default function FreelancersPage() {
                 {/* Results Info */}
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-gray-600">
-                        Showing {filteredFreelancers.length} freelancers
+                        {loading ? 'Loading...' : `Showing ${freelancers.length} freelancers`}
                     </p>
                 </div>
 
                 {/* Freelancers Grid */}
-                {filteredFreelancers.length > 0 ? (
+                {!loading && freelancers.length > 0 ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredFreelancers.map((freelancer) => (
+                        {freelancers.map((freelancer) => (
                             <div key={freelancer.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                                 <div className="p-6">
                                     {/* Profile Header */}
@@ -102,17 +135,14 @@ export default function FreelancersPage() {
                                         <div className="flex-1">
                                             <div className="flex items-center space-x-2 mb-1">
                                                 <h3 className="text-lg font-semibold text-gray-900">{freelancer.name}</h3>
-                                                {freelancer.isVerified && (
-                                                    <CheckCircle className="w-4 h-4 text-green-500" />
-                                                )}
                                             </div>
                                             <div className="flex items-center space-x-1 mb-2">
                                                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
                                                 <span className="text-sm font-medium text-gray-900">
-                                                    {freelancer.rating}
+                                                    {freelancer.rating || 'N/A'}
                                                 </span>
                                                 <span className="text-sm text-gray-500">
-                                                    ({freelancer.reviewCount} reviews)
+                                                    ({freelancer.review_count} reviews)
                                                 </span>
                                             </div>
                                         </div>
@@ -141,19 +171,19 @@ export default function FreelancersPage() {
                                     <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                                         <div>
                                             <p className="text-gray-500">Completed Tasks</p>
-                                            <p className="font-semibold text-gray-900">{freelancer.completedTasks}</p>
+                                            <p className="font-semibold text-gray-900">{freelancer.completed_tasks}</p>
                                         </div>
                                         <div>
-                                            <p className="text-gray-500">Success Rate</p>
+                                            <p className="text-gray-500">Hourly Rate</p>
                                             <p className="font-semibold text-gray-900">
-                                                {Math.round((freelancer.completedTasks / (freelancer.completedTasks + 5)) * 100)}%
+                                                ${freelancer.hourly_rate || 'N/A'}
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Member Since */}
                                     <div className="text-sm text-gray-500 mb-4">
-                                        Member since {new Date(freelancer.joinedDate).toLocaleDateString('en-US', {
+                                        Member since {new Date(freelancer.created_at).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'short'
                                         })}

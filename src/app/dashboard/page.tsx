@@ -21,8 +21,10 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<any>(null);
     const [userTasks, setUserTasks] = useState<any[]>([]);
+    const [activities, setActivities] = useState<any[]>([]);
     const [loadingStats, setLoadingStats] = useState(true);
     const [loadingTasks, setLoadingTasks] = useState(true);
+    const [loadingActivities, setLoadingActivities] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -95,6 +97,30 @@ export default function Dashboard() {
         };
 
         fetchTasks();
+    }, [user]);
+
+    // Fetch recent activities
+    useEffect(() => {
+        const fetchActivities = async () => {
+            if (!user) return;
+
+            try {
+                setLoadingActivities(true);
+                const response = await fetch('/api/dashboard/activity');
+                if (response.ok) {
+                    const data = await response.json();
+                    setActivities(data.activities || []);
+                } else {
+                    console.error('Failed to fetch activities');
+                }
+            } catch (error) {
+                console.error('Error fetching activities:', error);
+            } finally {
+                setLoadingActivities(false);
+            }
+        };
+
+        fetchActivities();
     }, [user]);
 
     if (loading) {
@@ -218,40 +244,57 @@ export default function Dashboard() {
                                 {/* Recent Activity */}
                                 <div className="bg-white rounded-lg shadow-sm border p-6">
                                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                                <Plus className="w-4 h-4 text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900">New task posted</p>
-                                                <p className="text-sm text-gray-600">Design a Modern Logo for Tech Startup</p>
-                                                <p className="text-xs text-gray-500">2 hours ago</p>
-                                            </div>
-                                        </div>
+                                    {loadingActivities ? (
+                                        <div className="text-center py-8 text-gray-600">Loading activities...</div>
+                                    ) : activities.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {activities.slice(0, 5).map((activity: any, index: number) => {
+                                                const getActivityIcon = (type: string) => {
+                                                    switch (type) {
+                                                        case 'task_posted':
+                                                            return { icon: <Plus className="w-4 h-4 text-white" />, color: 'bg-blue-500', bgColor: 'bg-blue-50' };
+                                                        case 'proposal_submitted':
+                                                            return { icon: <MessageSquare className="w-4 h-4 text-white" />, color: 'bg-orange-500', bgColor: 'bg-orange-50' };
+                                                        case 'proposal_accepted':
+                                                        case 'task_completed':
+                                                            return { icon: <CheckCircle className="w-4 h-4 text-white" />, color: 'bg-green-500', bgColor: 'bg-green-50' };
+                                                        case 'review_received':
+                                                            return { icon: <Star className="w-4 h-4 text-white" />, color: 'bg-yellow-500', bgColor: 'bg-yellow-50' };
+                                                        default:
+                                                            return { icon: <MessageSquare className="w-4 h-4 text-white" />, color: 'bg-gray-500', bgColor: 'bg-gray-50' };
+                                                    }
+                                                };
 
-                                        <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                                <CheckCircle className="w-4 h-4 text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900">Task completed</p>
-                                                <p className="text-sm text-gray-600">Write SEO-Optimized Blog Posts</p>
-                                                <p className="text-xs text-gray-500">1 day ago</p>
-                                            </div>
-                                        </div>
+                                                const { icon, color, bgColor } = getActivityIcon(activity.type);
 
-                                        <div className="flex items-center space-x-3 p-3 bg-orange-50 rounded-lg">
-                                            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                                                <MessageSquare className="w-4 h-4 text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900">3 new proposals received</p>
-                                                <p className="text-sm text-gray-600">Build a React Dashboard Component</p>
-                                                <p className="text-xs text-gray-500">3 days ago</p>
-                                            </div>
+                                                return (
+                                                    <div key={activity.id} className={`flex items-center space-x-3 p-3 ${bgColor} rounded-lg`}>
+                                                        <div className={`w-8 h-8 ${color} rounded-full flex items-center justify-center`}>
+                                                            {icon}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                                                            {activity.status && (
+                                                                <p className="text-sm text-gray-600">{activity.status}</p>
+                                                            )}
+                                                            <p className="text-xs text-gray-500">
+                                                                {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500">
+                                            No recent activity
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Performance Chart Placeholder */}
