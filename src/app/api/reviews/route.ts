@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
         // Check if task exists and is completed
         const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(taskId) as any;
-        
+
         if (!task) {
             return NextResponse.json(
                 { error: 'Task not found' },

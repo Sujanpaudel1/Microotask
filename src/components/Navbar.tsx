@@ -56,7 +56,7 @@ export function Navbar() {
                 setNotifyCount(data.count || 0);
             }
         } catch (error) {
-            console.log('Failed to load notification count:', error);
+            // Silent fail for notification count
         }
     };
 
@@ -73,7 +73,7 @@ export function Navbar() {
                 setNotifications((data.notifications || []).slice(0, 5));
             }
         } catch (error) {
-            console.log('Failed to load notifications:', error);
+            // Silent fail for notifications
         }
     };
 
@@ -82,7 +82,6 @@ export function Navbar() {
         let mounted = true;
         async function loadUserData() {
             try {
-                console.log('Navbar: Checking authentication...');
                 const verifyRes = await fetch('/api/auth/verify', {
                     credentials: 'include',
                     cache: 'no-store',
@@ -91,10 +90,8 @@ export function Navbar() {
                         'Pragma': 'no-cache'
                     }
                 });
-                console.log('Navbar: Auth response status:', verifyRes.status);
 
                 if (!verifyRes.ok) {
-                    console.log('Navbar: Not authenticated');
                     if (mounted) {
                         setIsAuthenticated(false);
                         setUser(null);
@@ -103,7 +100,6 @@ export function Navbar() {
                     return;
                 }
                 const verifyData = await verifyRes.json();
-                console.log('Navbar: User data received:', verifyData?.user);
 
                 if (mounted && verifyData?.user) {
                     setUser(verifyData.user);
@@ -245,6 +241,12 @@ export function Navbar() {
                     <div className="hidden md:flex items-center space-x-6">
                         <Link href="/tasks" className="text-gray-700 hover:text-blue-600 transition-colors">
                             Find Tasks
+                        </Link>
+                        <Link href="/saved-tasks" className="text-gray-700 hover:text-blue-600 transition-colors">
+                            Saved Tasks
+                        </Link>
+                        <Link href="/messages" className="text-gray-700 hover:text-blue-600 transition-colors">
+                            Messages
                         </Link>
                         <Link href="/freelancers" className="text-gray-700 hover:text-blue-600 transition-colors">
                             Find Talent

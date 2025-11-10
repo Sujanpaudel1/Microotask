@@ -78,7 +78,7 @@ async function testProfileAPIs() {
         // Step 2: Get profile
         console.log('2. Fetching profile...');
         const profileResponse = await makeRequest('/api/profile', 'GET', null, authToken);
-        
+
         console.log(`Status: ${profileResponse.status}`);
         if (profileResponse.status === 200) {
             console.log('✅ Profile fetched successfully');
@@ -99,7 +99,7 @@ async function testProfileAPIs() {
         };
 
         const updateResponse = await makeRequest('/api/profile', 'PATCH', updateData, authToken);
-        
+
         console.log(`Status: ${updateResponse.status}`);
         if (updateResponse.status === 200) {
             console.log('✅ Profile updated successfully');
@@ -111,7 +111,7 @@ async function testProfileAPIs() {
         // Step 4: Verify update by fetching again
         console.log('\n4. Verifying update...');
         const verifyResponse = await makeRequest('/api/profile', 'GET', null, authToken);
-        
+
         if (verifyResponse.status === 200) {
             console.log('✅ Verification successful');
             const profile = verifyResponse.body.profile;

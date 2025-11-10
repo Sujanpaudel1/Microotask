@@ -4,7 +4,7 @@ import db from '@/lib/database-sqlite';
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        
+
         // Get filter parameters
         const search = searchParams.get('search') || '';
         const category = searchParams.get('category') || '';
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        return NextResponse.json({ 
+        return NextResponse.json({
             tasks,
             filters: {
                 search,

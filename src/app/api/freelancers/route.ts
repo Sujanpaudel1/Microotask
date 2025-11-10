@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
         // Parse skills from JSON string to array for each freelancer
         const parsedFreelancers = freelancers.map((freelancer: any) => ({
             ...freelancer,
-            skills: freelancer.skills ? 
-                (typeof freelancer.skills === 'string' ? JSON.parse(freelancer.skills) : freelancer.skills) 
+            skills: freelancer.skills ?
+                (typeof freelancer.skills === 'string' ? JSON.parse(freelancer.skills) : freelancer.skills)
                 : []
         }));
 

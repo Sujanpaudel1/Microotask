@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { Task } from '@/types';
 import { formatCurrency, formatDateRelative, cn } from '@/lib/utils';
-import { Clock, DollarSign, User, Star } from 'lucide-react';
+import { Clock, DollarSign, User, Star, Bookmark } from 'lucide-react';
 
 interface TaskCardProps {
     task: any; // Support both API and mock data formats
@@ -9,6 +12,55 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, className }: TaskCardProps) {
+    const [isSaved, setIsSaved] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Check if task is already saved
+    useEffect(() => {
+        checkSavedStatus();
+    }, [task.id]);
+
+    const checkSavedStatus = async () => {
+        try {
+            const res = await fetch(`/api/bookmarks/${task.id}`);
+            const data = await res.json();
+            setIsSaved(data.isSaved);
+        } catch (error) {
+            console.error('Error checking saved status:', error);
+        }
+    };
+
+    const toggleSave = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        setIsLoading(true);
+        try {
+            if (isSaved) {
+                // Remove bookmark
+                const res = await fetch(`/api/bookmarks?taskId=${task.id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    setIsSaved(false);
+                }
+            } else {
+                // Add bookmark
+                const res = await fetch('/api/bookmarks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ taskId: task.id })
+                });
+                if (res.ok) {
+                    setIsSaved(true);
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling save:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
     // Normalize task data to handle both API and mock formats
     const normalizedTask = {
         ...task,
@@ -64,6 +116,19 @@ export function TaskCard({ task, className }: TaskCardProps) {
                         </h3>
                     </Link>
                     <div className="flex space-x-2 ml-4">
+                        <button
+                            onClick={toggleSave}
+                            disabled={isLoading}
+                            className={cn(
+                                'p-2 rounded-full transition-all',
+                                isSaved
+                                    ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                                    : 'text-gray-400 bg-gray-50 hover:bg-gray-100 hover:text-gray-600'
+                            )}
+                            title={isSaved ? 'Remove from saved' : 'Save for later'}
+                        >
+                            <Bookmark className={cn('w-4 h-4', isSaved && 'fill-current')} />
+                        </button>
                         <span className={cn('px-2 py-1 rounded-full text-xs font-medium', getDifficultyColor(task.difficulty))}>
                             {task.difficulty}
                         </span>

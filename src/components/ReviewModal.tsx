@@ -64,15 +64,15 @@ export default function ReviewModal({
             }
 
             alert('Review submitted successfully!');
-            
+
             // Reset form
             setRating(0);
             setComment('');
-            
+
             if (onReviewSubmitted) {
                 onReviewSubmitted();
             }
-            
+
             onClose();
 
         } catch (error: any) {

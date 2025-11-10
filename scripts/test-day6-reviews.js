@@ -85,7 +85,7 @@ if (completedTasks.length > 0) {
     completedTasks.forEach(task => {
         const clientReview = db.prepare('SELECT id FROM reviews WHERE task_id = ? AND reviewer_id = ?').get(task.id, task.client_id);
         const freelancerReview = db.prepare('SELECT id FROM reviews WHERE task_id = ? AND reviewer_id = ?').get(task.id, task.freelancer_id);
-        
+
         console.log(`\n   Task #${task.id}: "${task.title}"`);
         console.log(`   Client (${task.client_name}): ${clientReview ? '✅ Reviewed' : '⏳ Can review'}`);
         console.log(`   Freelancer (${task.freelancer_name}): ${freelancerReview ? '✅ Reviewed' : '⏳ Can review'}`);

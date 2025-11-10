@@ -43,7 +43,6 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (data) {
-                    console.log('Current user:', data);
                     setCurrentUser(data);
                 }
             })
@@ -52,26 +51,19 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
     // Fetch proposals if user is the task owner
     useEffect(() => {
-        console.log('Checking ownership:', { task, currentUser });
         if (task && currentUser && currentUser.user) {
             const userId = currentUser.user.id;
-            console.log('Task client_id:', task.client_id);
-            console.log('Current userId:', userId);
 
             if (task.client_id === userId) {
-                console.log('User is owner! Fetching proposals...');
                 setIsOwner(true);
                 fetch(`/api/tasks/${unwrappedParams.id}/proposals`, {
                     credentials: 'include'
                 })
                     .then(res => res.json())
                     .then(data => {
-                        console.log('Proposals fetched:', data.proposals);
                         setProposals(data.proposals || []);
                     })
                     .catch(err => console.error('Failed to load proposals', err));
-            } else {
-                console.log('User is NOT owner');
             }
         }
     }, [task, currentUser, unwrappedParams.id]);
@@ -236,14 +228,12 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             // Check if response is JSON before parsing
             const resContentType = res.headers.get('content-type');
             if (!resContentType || !resContentType.includes('application/json')) {
-                console.error('Non-JSON response received');
                 throw new Error('Server returned an invalid response. Please try again.');
             }
 
             const data = await res.json();
 
             if (!res.ok) {
-                console.error('Failed to submit proposal:', data);
                 throw new Error(data.error || 'Failed to submit proposal');
             }
 

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { TaskCard } from '@/components/TaskCard';
-import { categories } from '@/lib/mockData';
+import { TASK_CATEGORIES } from '@/lib/constants';
 import { Search, Users, CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function Home() {
@@ -172,7 +172,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {categories.slice(1).map((category) => (
+            {TASK_CATEGORIES.slice(1).map((category: string) => (
               <Link
                 key={category}
                 href={`/tasks?category=${category}`}

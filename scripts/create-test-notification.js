@@ -23,12 +23,12 @@ if (user) {
     console.log(`  For user: ${user.name} (ID: ${user.id})`);
     console.log(`  Message: System test notification - Day 5 implementation complete!`);
     console.log('');
-    
+
     // Show current unread count for this user
     const unreadCount = db.prepare(
         'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0'
     ).get(user.id);
-    
+
     console.log(`User ${user.name} now has ${unreadCount.count} unread notifications`);
 } else {
     console.log('No users found in database');

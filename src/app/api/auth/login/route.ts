@@ -5,11 +5,9 @@ import { verifyPassword, generateToken, isValidEmail } from '@/lib/auth';
 export async function POST(request: NextRequest) {
     try {
         const { email, password } = await request.json();
-        console.log('Login attempt for email:', email);
 
         // Validate input
         if (!email || !password) {
-            console.log('Missing email or password');
             return NextResponse.json(
                 { error: 'Email and password are required' },
                 { status: 400 }
@@ -17,7 +15,6 @@ export async function POST(request: NextRequest) {
         }
 
         if (!isValidEmail(email)) {
-            console.log('Invalid email format:', email);
             return NextResponse.json(
                 { error: 'Invalid email format' },
                 { status: 400 }
@@ -26,7 +23,6 @@ export async function POST(request: NextRequest) {
 
         try {
             // Find user by email
-            console.log('Searching for user with email:', email);
             const user = db.prepare('SELECT id, name, email, password FROM users WHERE email = ?').get(email) as {
                 id: number;
                 name: string;
@@ -35,14 +31,11 @@ export async function POST(request: NextRequest) {
             } | undefined;
 
             if (!user) {
-                console.log('User not found for email:', email);
                 return NextResponse.json(
                     { error: 'Invalid email or password' },
                     { status: 401 }
                 );
             }
-
-            console.log('User found:', { id: user.id, name: user.name, email: user.email });
 
             // Verify password
             const isPasswordValid = await verifyPassword(password, user.password);

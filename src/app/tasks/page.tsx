@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { TaskCard } from '@/components/TaskCard';
-import { categories } from '@/lib/mockData';
+import { TASK_CATEGORIES } from '@/lib/constants';
 import { Search, SlidersHorizontal } from 'lucide-react';
 
 export default function TasksPage() {
@@ -84,7 +84,7 @@ export default function TasksPage() {
                                 onChange={(e) => setSelectedCategory(e.target.value)}
                                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                             >
-                                {categories.map((category) => (
+                                {TASK_CATEGORIES.map((category: string) => (
                                     <option key={category} value={category}>
                                         {category}
                                     </option>

@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
         }));
 
         // Sort by timestamp descending
-        activities.sort((a, b) => 
+        activities.sort((a, b) =>
             new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
 

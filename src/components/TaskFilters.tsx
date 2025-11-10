@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Filter, X } from 'lucide-react';
+import { TASK_CATEGORIES, DIFFICULTY_LEVELS, TASK_STATUS } from '@/lib/constants';
 
 interface TaskFiltersProps {
     filters: {
@@ -15,21 +16,6 @@ interface TaskFiltersProps {
     onFilterChange: (filters: any) => void;
     onClearFilters: () => void;
 }
-
-const CATEGORIES = [
-    'Web Development',
-    'Mobile Development',
-    'Design',
-    'Writing',
-    'Marketing',
-    'Data Entry',
-    'Video Editing',
-    'Translation',
-    'Other'
-];
-
-const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
-const STATUSES = ['Open', 'In Progress', 'Completed', 'Cancelled'];
 
 const COMMON_SKILLS = [
     'JavaScript',
@@ -59,7 +45,7 @@ export default function TaskFilters({ filters, onFilterChange, onClearFilters }:
         const newSkills = selectedSkills.includes(skill)
             ? selectedSkills.filter(s => s !== skill)
             : [...selectedSkills, skill];
-        
+
         setSelectedSkills(newSkills);
         onFilterChange({ ...filters, skills: newSkills.join(',') });
     };
@@ -108,7 +94,7 @@ export default function TaskFilters({ filters, onFilterChange, onClearFilters }:
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">All Categories</option>
-                            {CATEGORIES.map(cat => (
+                            {TASK_CATEGORIES.slice(1).map((cat: string) => (
                                 <option key={cat} value={cat}>{cat}</option>
                             ))}
                         </select>
@@ -143,15 +129,14 @@ export default function TaskFilters({ filters, onFilterChange, onClearFilters }:
                             Difficulty
                         </label>
                         <div className="flex gap-2">
-                            {DIFFICULTIES.map(diff => (
+                            {DIFFICULTY_LEVELS.map((diff: string) => (
                                 <button
                                     key={diff}
                                     onClick={() => handleFilterChange('difficulty', filters.difficulty === diff ? '' : diff)}
-                                    className={`px-4 py-2 rounded-lg border transition-colors ${
-                                        filters.difficulty === diff
-                                            ? 'bg-blue-600 text-white border-blue-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                    }`}
+                                    className={`px-4 py-2 rounded-lg border transition-colors ${filters.difficulty === diff
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                        }`}
                                 >
                                     {diff}
                                 </button>
@@ -170,7 +155,7 @@ export default function TaskFilters({ filters, onFilterChange, onClearFilters }:
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">All Statuses</option>
-                            {STATUSES.map(stat => (
+                            {TASK_STATUS.map((stat: string) => (
                                 <option key={stat} value={stat}>{stat}</option>
                             ))}
                         </select>
@@ -186,11 +171,10 @@ export default function TaskFilters({ filters, onFilterChange, onClearFilters }:
                                 <button
                                     key={skill}
                                     onClick={() => handleSkillToggle(skill)}
-                                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                                        selectedSkills.includes(skill)
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
+                                    className={`px-3 py-1 rounded-full text-sm transition-colors ${selectedSkills.includes(skill)
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
                                 >
                                     {skill}
                                 </button>

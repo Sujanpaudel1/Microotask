@@ -13,7 +13,7 @@ async function testFreelancersAPI() {
         console.log('Test 1: Fetch all freelancers');
         const response1 = await fetch(`${BASE_URL}/api/freelancers`);
         const data1 = await response1.json();
-        
+
         if (response1.ok) {
             console.log(`✓ Success: Found ${data1.freelancers?.length || 0} freelancers`);
             if (data1.freelancers?.length > 0) {
@@ -28,7 +28,7 @@ async function testFreelancersAPI() {
         console.log('\nTest 2: Search freelancers by name');
         const response2 = await fetch(`${BASE_URL}/api/freelancers?search=john`);
         const data2 = await response2.json();
-        
+
         if (response2.ok) {
             console.log(`✓ Success: Found ${data2.freelancers?.length || 0} freelancers matching "john"`);
         } else {
@@ -39,7 +39,7 @@ async function testFreelancersAPI() {
         console.log('\nTest 3: Filter by minimum rating (4.0)');
         const response3 = await fetch(`${BASE_URL}/api/freelancers?minRating=4.0`);
         const data3 = await response3.json();
-        
+
         if (response3.ok) {
             console.log(`✓ Success: Found ${data3.freelancers?.length || 0} freelancers with rating >= 4.0`);
             if (data3.freelancers?.length > 0) {
@@ -54,7 +54,7 @@ async function testFreelancersAPI() {
         console.log('\nTest 4: Filter by skills');
         const response4 = await fetch(`${BASE_URL}/api/freelancers?skills=JavaScript`);
         const data4 = await response4.json();
-        
+
         if (response4.ok) {
             console.log(`✓ Success: Found ${data4.freelancers?.length || 0} freelancers with JavaScript skill`);
             if (data4.freelancers?.length > 0) {
@@ -70,7 +70,7 @@ async function testFreelancersAPI() {
         console.log('\nTest 5: Combine filters (rating + skills)');
         const response5 = await fetch(`${BASE_URL}/api/freelancers?minRating=4.0&skills=React`);
         const data5 = await response5.json();
-        
+
         if (response5.ok) {
             console.log(`✓ Success: Found ${data5.freelancers?.length || 0} freelancers with React and rating >= 4.0`);
         } else {
@@ -102,7 +102,7 @@ async function testDashboardActivity(authToken) {
 
         if (response.ok) {
             console.log(`✓ Success: Fetched ${data.activities?.length || 0} recent activities`);
-            
+
             if (data.activities?.length > 0) {
                 console.log('\nRecent Activities:');
                 data.activities.slice(0, 5).forEach((activity, index) => {

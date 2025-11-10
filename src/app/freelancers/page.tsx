@@ -33,13 +33,13 @@ export default function FreelancersPage() {
         try {
             setLoading(true);
             const params = new URLSearchParams();
-            
+
             if (searchTerm) params.append('search', searchTerm);
             if (selectedSkill) params.append('skills', selectedSkill);
             if (minRating) params.append('minRating', minRating);
 
             const response = await fetch(`/api/freelancers?${params.toString()}`);
-            
+
             if (!response.ok) {
                 throw new Error('Failed to fetch freelancers');
             }

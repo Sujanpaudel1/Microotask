@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { categories } from '@/lib/mockData';
+import { TASK_CATEGORIES } from '@/lib/constants';
 import { DollarSign, FileText, Tag, AlertCircle, CheckCircle, X } from 'lucide-react';
 
 export default function PostTaskPage() {
@@ -222,7 +222,7 @@ export default function PostTaskPage() {
                                         required
                                     >
                                         <option value="">Select a category</option>
-                                        {categories.slice(1).map((category) => (
+                                        {TASK_CATEGORIES.slice(1).map((category: string) => (
                                             <option key={category} value={category}>
                                                 {category}
                                             </option>

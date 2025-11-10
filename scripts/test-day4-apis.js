@@ -181,7 +181,7 @@ async function testCancelTask() {
     console.log('\n📝 Testing task cancellation...');
     // Create a new task first
     await createTestTask();
-    
+
     const res = await fetch(`${BASE_URL}/api/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {

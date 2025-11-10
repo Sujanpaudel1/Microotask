@@ -10,11 +10,11 @@ let updated = 0;
 for (const notif of notifications) {
     try {
         const payload = JSON.parse(notif.payload);
-        
+
         // If payload doesn't have a message field, add one
         if (!payload.message) {
             let message = '';
-            
+
             switch (notif.type) {
                 case 'proposal_submitted':
                     message = `New proposal received for "${payload.title || 'your task'}"`;
@@ -34,13 +34,13 @@ for (const notif of notifications) {
                 default:
                     message = payload.title || 'You have a new notification';
             }
-            
+
             payload.message = message;
             if (payload.title) {
                 payload.taskTitle = payload.title;
                 delete payload.title;
             }
-            
+
             const newPayload = JSON.stringify(payload);
             db.prepare('UPDATE notifications SET payload = ? WHERE id = ?').run(newPayload, notif.id);
             updated++;
