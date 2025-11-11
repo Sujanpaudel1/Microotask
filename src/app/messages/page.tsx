@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import { Send, ArrowLeft, User as UserIcon, Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
@@ -174,25 +172,19 @@ function MessagesContent() {
 
     if (loading) {
         return (
-            <>
-                <Navbar />
-                <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Loading messages...</p>
-                    </div>
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading messages...</p>
                 </div>
-                <Footer />
-            </>
+            </div>
         );
     }
 
     return (
-        <>
-            <Navbar />
-            <div className="min-h-screen bg-gray-50 pt-20 pb-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-6">Messages</h1>
+        <div className="min-h-screen bg-gray-50 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-6">Messages</h1>
 
                     <div className="bg-white rounded-lg shadow-sm border h-[calc(100vh-200px)] flex">
                         {/* Conversations List */}
@@ -360,24 +352,18 @@ function MessagesContent() {
                     </div>
                 </div>
             </div>
-            <Footer />
-        </>
     );
 }
 
 export default function MessagesPage() {
     return (
         <Suspense fallback={
-            <>
-                <Navbar />
-                <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Loading messages...</p>
-                    </div>
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading messages...</p>
                 </div>
-                <Footer />
-            </>
+            </div>
         }>
             <MessagesContent />
         </Suspense>

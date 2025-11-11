@@ -529,14 +529,24 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <span className={cn(
-                                                            'px-3 py-1 rounded-full text-sm font-medium',
-                                                            proposal.status === 'Accepted'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : 'bg-red-100 text-red-800'
-                                                        )}>
-                                                            {proposal.status}
-                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={cn(
+                                                                'px-3 py-1 rounded-full text-sm font-medium',
+                                                                proposal.status === 'Accepted'
+                                                                    ? 'bg-green-100 text-green-800'
+                                                                    : 'bg-red-100 text-red-800'
+                                                            )}>
+                                                                {proposal.status}
+                                                            </span>
+                                                            {proposal.status === 'Accepted' && (
+                                                                <Link
+                                                                    href={`/messages?task=${unwrappedParams.id}`}
+                                                                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                                                                >
+                                                                    💬 Message
+                                                                </Link>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>

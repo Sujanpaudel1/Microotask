@@ -53,12 +53,29 @@ export async function POST(
         // Update task status to In Progress
         db.prepare('UPDATE tasks SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run('In Progress', taskId);
 
+        // Create a conversation between client and freelancer
+        // Check if conversation already exists
+        const existingConversation = db.prepare(`
+            SELECT id FROM conversations 
+            WHERE task_id = ? 
+            AND ((user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?))
+        `).get(taskId, userId, proposal.freelancer_id, proposal.freelancer_id, userId) as any;
+
+        if (!existingConversation) {
+            // Create new conversation
+            db.prepare(`
+                INSERT INTO conversations (user1_id, user2_id, task_id, created_at, last_message_at)
+                VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).run(userId, proposal.freelancer_id, taskId);
+        }
+
         // Create notification for accepted freelancer
         const notificationPayload = JSON.stringify({
             title: 'Proposal Accepted!',
-            message: `Your proposal for "${task.title}" has been accepted`,
+            message: `Your proposal for "${task.title}" has been accepted. You can now chat with the client.`,
             taskId: taskId,
-            type: 'proposal_accepted'
+            type: 'proposal_accepted',
+            link: `/messages?task=${taskId}`
         });
 
         db.prepare(
