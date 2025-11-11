@@ -69,13 +69,29 @@ export async function GET(request: NextRequest) {
 
         const freelancers = db.prepare(query).all(...params);
 
-        // Parse skills from JSON string to array for each freelancer
-        const parsedFreelancers = freelancers.map((freelancer: any) => ({
-            ...freelancer,
-            skills: freelancer.skills ?
-                (typeof freelancer.skills === 'string' ? JSON.parse(freelancer.skills) : freelancer.skills)
-                : []
-        }));
+        // Parse skills from JSON string or comma-separated string to array for each freelancer
+        const parsedFreelancers = freelancers.map((freelancer: any) => {
+            let skills: string[] = [];
+            
+            if (freelancer.skills) {
+                if (typeof freelancer.skills === 'string') {
+                    try {
+                        // Try parsing as JSON first
+                        skills = JSON.parse(freelancer.skills);
+                    } catch {
+                        // If JSON parse fails, treat as comma-separated string
+                        skills = freelancer.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+                    }
+                } else if (Array.isArray(freelancer.skills)) {
+                    skills = freelancer.skills;
+                }
+            }
+            
+            return {
+                ...freelancer,
+                skills
+            };
+        });
 
         return NextResponse.json({
             success: true,
