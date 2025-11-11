@@ -58,13 +58,13 @@ export async function POST(
         const existingConversation = db.prepare(`
             SELECT id FROM conversations 
             WHERE task_id = ? 
-            AND ((user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?))
+            AND ((participant_1_id = ? AND participant_2_id = ?) OR (participant_1_id = ? AND participant_2_id = ?))
         `).get(taskId, userId, proposal.freelancer_id, proposal.freelancer_id, userId) as any;
 
         if (!existingConversation) {
             // Create new conversation
             db.prepare(`
-                INSERT INTO conversations (user1_id, user2_id, task_id, created_at, last_message_at)
+                INSERT INTO conversations (participant_1_id, participant_2_id, task_id, created_at, last_message_at)
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `).run(userId, proposal.freelancer_id, taskId);
         }
